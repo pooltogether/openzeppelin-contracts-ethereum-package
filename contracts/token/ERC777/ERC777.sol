@@ -30,38 +30,38 @@ contract ERC777 is Initializable, Context, IERC777, IERC20 {
     using SafeMath for uint256;
     using Address for address;
 
-    IERC1820Registry constant private _erc1820 = IERC1820Registry(0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24);
+    IERC1820Registry constant internal _erc1820 = IERC1820Registry(0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24);
 
-    mapping(address => uint256) private _balances;
+    mapping(address => uint256) internal _balances;
 
-    uint256 private _totalSupply;
+    uint256 internal _totalSupply;
 
-    string private _name;
-    string private _symbol;
+    string internal _name;
+    string internal _symbol;
 
     // We inline the result of the following hashes because Solidity doesn't resolve them at compile time.
     // See https://github.com/ethereum/solidity/issues/4024.
 
     // keccak256("ERC777TokensSender")
-    bytes32 constant private TOKENS_SENDER_INTERFACE_HASH =
+    bytes32 constant internal TOKENS_SENDER_INTERFACE_HASH =
         0x29ddb589b1fb5fc7cf394961c1adf5f8c6454761adf795e67fe149f658abe895;
 
     // keccak256("ERC777TokensRecipient")
-    bytes32 constant private TOKENS_RECIPIENT_INTERFACE_HASH =
+    bytes32 constant internal TOKENS_RECIPIENT_INTERFACE_HASH =
         0xb281fc8c12954d22544db45de3159a39272895b169a852b314f9cc762e44c53b;
 
     // This isn't ever read from - it's only used to respond to the defaultOperators query.
-    address[] private _defaultOperatorsArray;
+    address[] internal _defaultOperatorsArray;
 
     // Immutable, but accounts may revoke them (tracked in __revokedDefaultOperators).
-    mapping(address => bool) private _defaultOperators;
+    mapping(address => bool) internal _defaultOperators;
 
     // For each account, a mapping of its operators and revoked default operators.
-    mapping(address => mapping(address => bool)) private _operators;
-    mapping(address => mapping(address => bool)) private _revokedDefaultOperators;
+    mapping(address => mapping(address => bool)) internal _operators;
+    mapping(address => mapping(address => bool)) internal _revokedDefaultOperators;
 
     // ERC20-allowances
-    mapping (address => mapping (address => uint256)) private _allowances;
+    mapping (address => mapping (address => uint256)) internal _allowances;
 
     /**
      * @dev `defaultOperators` may be an empty array.
@@ -352,7 +352,7 @@ contract ERC777 is Initializable, Context, IERC777, IERC20 {
         bytes memory operatorData,
         bool requireReceptionAck
     )
-        private
+        internal
     {
         require(from != address(0), "ERC777: send from the zero address");
         require(to != address(0), "ERC777: send to the zero address");
@@ -379,7 +379,7 @@ contract ERC777 is Initializable, Context, IERC777, IERC20 {
         bytes memory data,
         bytes memory operatorData
     )
-        private
+        internal
     {
         require(from != address(0), "ERC777: burn from the zero address");
 
@@ -401,7 +401,7 @@ contract ERC777 is Initializable, Context, IERC777, IERC20 {
         bytes memory userData,
         bytes memory operatorData
     )
-        private
+        internal
     {
         _balances[from] = _balances[from].sub(amount, "ERC777: transfer amount exceeds balance");
         _balances[to] = _balances[to].add(amount);
@@ -410,7 +410,7 @@ contract ERC777 is Initializable, Context, IERC777, IERC20 {
         emit Transfer(from, to, amount);
     }
 
-    function _approve(address holder, address spender, uint256 value) private {
+    function _approve(address holder, address spender, uint256 value) internal {
         // TODO: restore this require statement if this function becomes internal, or is called at a new callsite. It is
         // currently unnecessary.
         //require(holder != address(0), "ERC777: approve from the zero address");
@@ -437,7 +437,7 @@ contract ERC777 is Initializable, Context, IERC777, IERC20 {
         bytes memory userData,
         bytes memory operatorData
     )
-        private
+        internal
     {
         address implementer = _erc1820.getInterfaceImplementer(from, TOKENS_SENDER_INTERFACE_HASH);
         if (implementer != address(0)) {
@@ -465,7 +465,7 @@ contract ERC777 is Initializable, Context, IERC777, IERC20 {
         bytes memory operatorData,
         bool requireReceptionAck
     )
-        private
+        internal
     {
         address implementer = _erc1820.getInterfaceImplementer(to, TOKENS_RECIPIENT_INTERFACE_HASH);
         if (implementer != address(0)) {
