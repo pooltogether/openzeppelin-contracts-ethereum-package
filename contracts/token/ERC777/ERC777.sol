@@ -295,6 +295,22 @@ contract ERC777 is Initializable, Context, IERC777, IERC20 {
         return true;
     }
 
+    function _mintSupply(uint256 amount) internal {
+        _totalSupply = _totalSupply.add(amount);
+    }
+
+    function _burnSupply(uint256 amount) internal {
+        _totalSupply = _totalSupply.sub(amount);
+    }
+
+    function _addBalance(address account, uint256 amount) internal {
+        _balances[account] = _balances[account].add(amount);
+    }
+
+    function _subBalance(address account, uint256 amount, string memory message) internal {
+        _balances[account] = _balances[account].sub(amount, message);
+    }
+
     /**
      * @dev Creates `amount` tokens and assigns them to `account`, increasing
      * the total supply.
@@ -324,8 +340,8 @@ contract ERC777 is Initializable, Context, IERC777, IERC20 {
         require(account != address(0), "ERC777: mint to the zero address");
 
         // Update state variables
-        _totalSupply = _totalSupply.add(amount);
-        _balances[account] = _balances[account].add(amount);
+        _mintSupply(amount);
+        _addBalance(account, amount);
 
         _callTokensReceived(operator, address(0), account, amount, userData, operatorData, true);
 
@@ -386,8 +402,8 @@ contract ERC777 is Initializable, Context, IERC777, IERC20 {
         _callTokensToSend(operator, from, address(0), amount, data, operatorData);
 
         // Update state variables
-        _balances[from] = _balances[from].sub(amount, "ERC777: burn amount exceeds balance");
-        _totalSupply = _totalSupply.sub(amount);
+        _subBalance(from, amount, "ERC777: burn amount exceeds balance");
+        _burnSupply(amount);
 
         emit Burned(operator, from, amount, data, operatorData);
         emit Transfer(from, address(0), amount);
@@ -403,8 +419,8 @@ contract ERC777 is Initializable, Context, IERC777, IERC20 {
     )
         internal
     {
-        _balances[from] = _balances[from].sub(amount, "ERC777: transfer amount exceeds balance");
-        _balances[to] = _balances[to].add(amount);
+        _subBalance(from, amount, "ERC777: transfer amount exceeds balance");
+        _addBalance(to, amount);
 
         emit Sent(operator, from, to, amount, userData, operatorData);
         emit Transfer(from, to, amount);
